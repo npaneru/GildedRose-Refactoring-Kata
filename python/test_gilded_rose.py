@@ -77,7 +77,50 @@ class GildedRoseTest(unittest.TestCase):
         items = [Item("Backstage passes to a TAFKAL80ETC concert", 0, 20)]
         gr = GildedRose(items)
         gr.update_quality()
-        self.assertEqual(items[0].quality, 0)
+        self.assertEqual(items[0].quality, 0) # Special case when sell< 0 & backastage pass reset quality to 0
+
+    def test_normal_case_quality_gt_0_sell_in_lt_0(self):
+        items = [Item("normal case", -1, 10)]
+        gilded_rose = GildedRose(items)
+        gilded_rose.update_quality()
+        self.assertEqual(8, items[0].quality) # -2 less
+        self.assertEqual(-2, items[0].sell_in)
         
+    def test_normal_case_quality_eq_1_sell_in_lt_0(self):
+        items = [Item("normal case", -1, 1)]
+        gilded_rose = GildedRose(items)
+        gilded_rose.update_quality()
+        self.assertEqual(0, items[0].quality) # 1 less
+        self.assertEqual(-2, items[0].sell_in)
+
+    def test_normal_case_quality_lt_0_sell_in_lt_0(self):
+        items = [Item("normal case", -1, -1)]
+        gilded_rose = GildedRose(items)
+        gilded_rose.update_quality()
+        self.assertEqual(-1, items[0].quality) # no change
+        self.assertEqual(-2, items[0].sell_in) # less 1
+
+    def test_normal_case_quality_lt_0_sell_in_eq_1(self):
+        items = [Item("normal case", 1, -1)]
+        gilded_rose = GildedRose(items)
+        gilded_rose.update_quality()
+        self.assertEqual(-1, items[0].quality)
+        self.assertEqual(0, items[0].sell_in)
+
+    def test_normal_case_quality_gt_0_sell_in_eq_1(self):
+        items = [Item("normal case", 1, 1)]
+        gilded_rose = GildedRose(items)
+        gilded_rose.update_quality()
+        self.assertEqual(0, items[0].quality)
+        self.assertEqual(0, items[0].sell_in)
+
+    def test_normal_case_quality_gt_0_sell_in_gt_1(self):
+        items = [Item("normal case", 3, 12)]
+        gilded_rose = GildedRose(items)
+        gilded_rose.update_quality()
+        self.assertEqual(11, items[0].quality)
+        self.assertEqual(2, items[0].sell_in)
+
+
 if __name__ == '__main__':
     unittest.main()
