@@ -3,42 +3,54 @@ import abc
 class ItemUpdater(abc.ABC):
 
     @abc.abstractmethod
-    def update(self, item):
+    def update(self):
         pass
 
+    # No init duplication in child classes
+    def __init__(self, item):
+        self.item = item
+
+    def increase_quality(self):
+        self.item.quality = min(50, self.item.quality + 1)
+
+    def reduce_quality(self):
+        self.item.quality = max(0, self.item.quality - 1) 
+
 class AgedBrieUpdater(ItemUpdater):
-    def update(self, item):
-        if item.quality < 50:
-            item.quality = item.quality + 1
-        item.sell_in = item.sell_in - 1
-        if item.sell_in < 0:
-            if item.quality < 50:
-                item.quality = item.quality + 1
+        
+    def update(self):
+        if self.item.quality < 50:
+            self.increase_quality()
+        self.item.sell_in = self.item.sell_in - 1
+        if self.item.sell_in < 0:
+            if self.item.quality < 50:
+                self.increase_quality()
 
 class BackstagePassUpdater(ItemUpdater):
-    def update(self, item):
         
-        item.quality = min(50, item.quality + 1)
-        if item.sell_in < 11:
-            item.quality = item.quality + 1
-        if item.sell_in < 6:
-            item.quality = item.quality + 1
-        item.sell_in = item.sell_in -1
-        if item.sell_in < 0:
-            item.quality = 0
+    def update(self):
+        
+        self.increase_quality()
+        if self.item.sell_in < 11:
+            self.increase_quality()
+        if self.item.sell_in < 6:
+            self.increase_quality()
+        self.item.sell_in = self.item.sell_in -1
+        if self.item.sell_in < 0:
+            self.item.quality = 0
 
 class SulfurasUpdater(ItemUpdater):
-    def update(self, item):
+    def update(self):
         pass
 
 class NormalItemUpdater(ItemUpdater):
-    def update(self, item):
-        if item.quality > 0:
-            item.quality = item.quality - 1
-        item.sell_in = item.sell_in - 1
-        if item.sell_in < 0:
-            if item.quality > 0:
-                item.quality = item.quality - 1
+    def update(self):
+        if self.item.quality > 0:
+            self.reduce_quality()
+        self.item.sell_in = self.item.sell_in - 1
+        if self.item.sell_in < 0:
+            if self.item.quality > 0:
+                self.reduce_quality()
 
 class GildedRose(object):
 
@@ -48,48 +60,18 @@ class GildedRose(object):
 
     def get_updater(self, item):
         if item.name == "Aged Brie":
-            return AgedBrieUpdater()
+            return AgedBrieUpdater(item)
         elif item.name == "Backstage passes to a TAFKAL80ETC concert":
-            return BackstagePassUpdater()
+            return BackstagePassUpdater(item)
         elif item.name == "Sulfuras, Hand of Ragnaros":
-            return SulfurasUpdater()
+            return SulfurasUpdater(item)
         else:
-            return NormalItemUpdater()
+            return NormalItemUpdater(item)
 
     def update_quality(self):
         for item in self.items:
             updater = self.get_updater(item)
-            updater.update(item)
-            # if item.name != "Aged Brie" and item.name != "Backstage passes to a TAFKAL80ETC concert":
-            #     if item.quality > 0:
-            #         if item.name != "Sulfuras, Hand of Ragnaros":
-            #             item.quality = item.quality - 1
-            # else:
-            #     if item.quality < 50:
-            #         item.quality = item.quality + 1
-            #         if item.name == "Backstage passes to a TAFKAL80ETC concert":
-            #             if item.sell_in < 11:
-            #                 if item.quality < 50:
-            #                     item.quality = item.quality + 1
-            #             if item.sell_in < 6:
-            #                 if item.quality < 50:
-            #                     item.quality = item.quality + 1
-
-            # if item.name != "Sulfuras, Hand of Ragnaros":
-            #     item.sell_in = item.sell_in - 1
-
-            # if item.sell_in < 0:
-            #     if item.name != "Aged Brie":
-            #         if item.name != "Backstage passes to a TAFKAL80ETC concert":
-            #             if item.quality > 0:
-            #                 if item.name != "Sulfuras, Hand of Ragnaros":
-            #                     item.quality = item.quality - 1
-            #         else:
-            #             item.quality = 0
-            #     else:
-            #         if item.quality < 50:
-            #             item.quality = item.quality + 1
-
+            updater.update()
 
 class Item:
     def __init__(self, name, sell_in, quality):
