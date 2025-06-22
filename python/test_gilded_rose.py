@@ -39,6 +39,13 @@ class GildedRoseTest(unittest.TestCase):
         self.assertEqual(-2, items[0].sell_in)
         self.assertEqual(55, items[0].quality)
 
+    def test_aged_sell_in_lt_0_qual_eq_49(self): #
+        items = [Item("Aged Brie", -1, 49)]
+        gilded_rose = GildedRose(items)
+        gilded_rose.update_quality()
+        self.assertEqual(-2, items[0].sell_in)
+        self.assertEqual(50, items[0].quality)
+
     def test_aged_sell_in_gt_0_qual_lt_50(self):
         items = [Item("Aged Brie", 3, 45)]
         gilded_rose = GildedRose(items)
